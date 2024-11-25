@@ -5,7 +5,7 @@ from threading import Thread
 import signal
 import json
 
-app = Flask('')
+app = Flask(__name__)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -188,3 +188,7 @@ def restart_server():
     except Exception as e:
         log_message(f"Error restarting server: {str(e)}")
     return redirect(url_for('home'))
+
+if __name__ == "__main__":
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)
