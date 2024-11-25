@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Torrent Seeder Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Torrent Seeder Dashboard</h1>
+        
+        <div class="upload-section">
+            <h2>Upload Torrent File</h2>
+            <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" accept=".torrent">
+                <input type="submit" value="Upload">
+            </form>
+        </div>
+
+        <div class="nav-links">
+            <a href="{{ url_for('view_peer_data') }}" class="nav-btn">View Peer Data</a>
+            <a href="{{ url_for('update_all') }}" class="nav-btn update-btn">Update All</a>
+            <a href="{{ url_for('restart_server') }}" class="nav-btn restart-btn">Restart Server</a>
+        </div>
+
+        <div class="user-agent-section">
+            <h2>User Agent Settings</h2>
+            <div class="current-agent" id="currentAgent"></div>
+            <form action="{{ url_for('set_user_agent') }}" method="post" class="agent-form">
+                <input type="text" name="user_agent" placeholder="Enter new User-Agent">
+                <input type="submit" value="Update">
+            </form>
+        </div>
+
+        <div class="port-section">
+            <h2>Port Settings</h2>
+            <div class="current-port" id="currentPort"></div>
+            <form action="{{ url_for('set_port') }}" method="post" class="port-form">
+                <input type="number" name="port" placeholder="Enter new Port (1024-65535)" min="1024" max="65535">
+                <input type="submit" value="Update">
+            </form>
+        </div>
+
+        <div class="torrents-section">
+            <h2>Current Torrent Files</h2>
+            <div class="torrent-list">
+                {% if torrent_files %}
+                    {% for file in torrent_files %}
+                    <div class="torrent-item">
+                        <span>{{ file }}</span>
+                        <a href="{{ url_for('delete_file', filename=file) }}" class="delete-btn">Delete</a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No torrent files found</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="status-section">
+            <h2>Status</h2>
+            <div id="status" class="status"></div>
+        </div>
+
+        <div class="logs-section">
+            <h2>Logs</h2>
+            <div id="logs" class="logs"></div>
+        </div>
+    </div>
+
+    <script>
+        function updateLogs() {
+            fetch('/logs')
+                .then(response => response.json())
+                .then(data => {
+                    const logsDiv = document.getElementById('logs');
+                    logsDiv.innerHTML = data.logs.map(log => `<div class="log-entry">${log}</div>`).join('');
+                    logsDiv.scrollTop = logsDiv.scrollHeight;
+                });
+        }
+
+        // Add function to get current user agent
+        function updateUserAgent() {
+            fetch('/get_user_agent')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('currentAgent').textContent = 
+                        'Current User-Agent: ' + data.user_agent;
+                });
+        }
+
+        // Add function to get current port
+        function updatePort() {
+            fetch('/get_port')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('currentPort').textContent = 
+                        'Current Port: ' + data.port;
+                });
+        }
+
+        // Update everything
+        setInterval(() => {
+            updateLogs();
+            updateUserAgent();
+            updatePort();
+        }, 2000);
+        
+        updateLogs();
+        updateUserAgent();
+        updatePort();
+    </script>
+</body>
+</html> 
