@@ -68,7 +68,25 @@
     </div>
 
     <script>
-        function updateLogs() {
+        // Update interval to 5 seconds instead of 2
+        const UPDATE_INTERVAL = 5000;
+        
+        // Add throttling to prevent too many requests
+        function throttle(func, limit) {
+            let inThrottle;
+            return function() {
+                const args = arguments;
+                const context = this;
+                if (!inThrottle) {
+                    func.apply(context, args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
+                }
+            }
+        }
+
+        // Throttled update functions
+        const throttledUpdateLogs = throttle(() => {
             fetch('/logs')
                 .then(response => response.json())
                 .then(data => {
@@ -76,38 +94,37 @@
                     logsDiv.innerHTML = data.logs.map(log => `<div class="log-entry">${log}</div>`).join('');
                     logsDiv.scrollTop = logsDiv.scrollHeight;
                 });
-        }
+        }, 1000);
 
-        // Add function to get current user agent
-        function updateUserAgent() {
+        const throttledUpdateUserAgent = throttle(() => {
             fetch('/get_user_agent')
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('currentAgent').textContent = 
                         'Current User-Agent: ' + data.user_agent;
                 });
-        }
+        }, 1000);
 
-        // Add function to get current port
-        function updatePort() {
+        const throttledUpdatePort = throttle(() => {
             fetch('/get_port')
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('currentPort').textContent = 
                         'Current Port: ' + data.port;
                 });
-        }
+        }, 1000);
 
-        // Update everything
+        // Update everything with longer interval
         setInterval(() => {
-            updateLogs();
-            updateUserAgent();
-            updatePort();
-        }, 2000);
+            throttledUpdateLogs();
+            throttledUpdateUserAgent();
+            throttledUpdatePort();
+        }, UPDATE_INTERVAL);
         
-        updateLogs();
-        updateUserAgent();
-        updatePort();
+        // Initial update
+        throttledUpdateLogs();
+        throttledUpdateUserAgent();
+        throttledUpdatePort();
     </script>
 </body>
 </html> 

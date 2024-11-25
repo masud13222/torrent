@@ -8,7 +8,8 @@ import json
 app = Flask(__name__)
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+log_level = os.environ.get('LOG_LEVEL', 'WARNING')  # Default to WARNING
+logging.basicConfig(level=getattr(logging, log_level))
 logger = logging.getLogger('TorrentSeeder')
 werkzeug_logger = logging.getLogger('werkzeug')
 werkzeug_logger.setLevel(logging.ERROR)  # Only show errors from werkzeug
@@ -22,7 +23,10 @@ def log_message(message):
     log_messages.append(message)
     if len(log_messages) > 100:
         log_messages.pop(0)
-    logger.info(message)
+    if log_level == 'INFO':
+        logger.info(message)
+    else:
+        logger.debug(message)  # Use debug for less important logs
 
 @app.route('/')
 def home():
