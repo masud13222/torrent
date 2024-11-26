@@ -4,7 +4,8 @@ import logging
 from threading import Thread
 import signal
 import json
-from database import save_torrent_file, delete_torrent_file, save_peer_data, ensure_torrent_dir
+from database import save_torrent_file, delete_torrent_file, save_peer_data, ensure_torrent_dir, get_torrent_files
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
 
@@ -19,6 +20,9 @@ log_messages = []
 # Global variables
 seeder_list = []
 server_thread = None
+scheduler = BackgroundScheduler()
+scheduler.add_job(ensure_torrent_dir, 'interval', minutes=30)
+scheduler.start()
 
 def log_message(message):
     log_messages.append(message)
@@ -122,6 +126,9 @@ def stop_server():
 def reload_torrents():
     global seeder_list
     import torrent
+    
+    # First ensure torrent directory and files exist
+    ensure_torrent_dir()
     
     seeder_list.clear()
     if os.path.exists('./torrent'):
