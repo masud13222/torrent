@@ -1,1 +1,5 @@
-.torrent
+__pycache__/
+*.pyc
+.env
+torrent/*
+!torrent/.gitkeep
