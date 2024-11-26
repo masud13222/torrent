@@ -2,6 +2,7 @@ from pymongo import MongoClient
 import json
 import bson
 import os
+import shutil
 
 # MongoDB connection
 MONGODB_URI = "mongodb+srv://cinemazbd:A3cyYdaS3JkOGYog@cluster0.akey0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
@@ -42,16 +43,23 @@ def get_peer_data():
 
 def ensure_torrent_dir():
     """Ensure torrent directory exists and restore files from MongoDB"""
-    if not os.path.exists('./torrent'):
-        os.makedirs('./torrent')
+    # First remove existing torrent directory
+    if os.path.exists('./torrent'):
+        shutil.rmtree('./torrent')
     
-    # Restore torrent files
+    # Create fresh torrent directory
+    os.makedirs('./torrent')
+    
+    # Restore torrent files from MongoDB
     for doc in get_torrent_files():
-        filename = doc['filename']
-        file_data = doc['data']
-        file_path = os.path.join('./torrent', filename)
-        with open(file_path, 'wb') as f:
-            f.write(file_data)
+        try:
+            filename = doc['filename']
+            file_data = doc['data']
+            file_path = os.path.join('./torrent', filename)
+            with open(file_path, 'wb') as f:
+                f.write(file_data)
+        except Exception as e:
+            print(f"Error restoring {filename}: {str(e)}")
     
     # Restore peer data
     peer_data = get_peer_data()
