@@ -19,6 +19,9 @@ def signal_handler(signum, frame):
     stop_server()
 
 def main():
+    # Add at start of main function, before anything else
+    ensure_torrent_dir()
+    
     # Set up signal handlers
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
