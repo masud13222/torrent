@@ -4,6 +4,7 @@ import logging
 from threading import Thread
 import signal
 import json
+from database import save_torrent_file, delete_torrent_file, save_peer_data, ensure_torrent_dir
 
 app = Flask(__name__)
 
@@ -47,7 +48,13 @@ def upload_file():
     if file and file.filename.endswith('.torrent'):
         if not os.path.exists('./torrent'):
             os.makedirs('./torrent')
-        file.save(os.path.join('./torrent', file.filename))
+        file_data = file.read()
+        # Save to MongoDB
+        save_torrent_file(file.filename, file_data)
+        # Save to local filesystem
+        file_path = os.path.join('./torrent', file.filename)
+        with open(file_path, 'wb') as f:
+            f.write(file_data)
         log_message(f"Uploaded new torrent file: {file.filename}")
         reload_torrents()
     return redirect(url_for('home'))
@@ -56,10 +63,12 @@ def upload_file():
 def delete_file(filename):
     file_path = os.path.join('./torrent', filename)
     if os.path.exists(file_path):
-        # First remove the torrent data
+        # Remove from MongoDB
+        delete_torrent_file(filename)
+        # Remove torrent data
         import torrent
         torrent.Seeder.remove_torrent_data(file_path)
-        # Then delete the file
+        # Delete local file
         os.remove(file_path)
         log_message(f"Deleted torrent file: {filename}")
         reload_torrents()

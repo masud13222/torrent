@@ -5,6 +5,7 @@ import signal
 import sys
 import torrent
 import utils
+from database import ensure_torrent_dir
 
 # Global flag for graceful shutdown
 running = True

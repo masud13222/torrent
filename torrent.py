@@ -9,6 +9,7 @@ import json
 
 import bencoding
 import utils
+from database import save_peer_data as db_save_peer_data
 
 PEER_DATA_FILE = './torrent/peer_data.json'
 CONFIG_FILE = './torrent/config.json'
@@ -155,8 +156,11 @@ class Seeder:
 
   @staticmethod
   def save_peer_data(data):
+    # Save to MongoDB
+    db_save_peer_data(data)
+    # Also save locally
     with open(PEER_DATA_FILE, 'w') as f:
-      json.dump(data, f, indent=2)
+        json.dump(data, f, indent=2)
 
   def __init__(self, torrent):
     self.torrent = torrent
