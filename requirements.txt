@@ -2,4 +2,5 @@ flask
 requests
 gunicorn
 waitress
-pymongo[srv] 
+pymongo[srv]
+APScheduler==3.10.1 
