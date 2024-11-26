@@ -133,37 +133,14 @@ class Seeder:
     with open(CONFIG_FILE, 'w') as f:
       json.dump(config, f, indent=2)
 
-  HTTP_HEADERS = {
-    "Accept-Encoding": "gzip",
-    "User-Agent": get_user_agent()
-  }
-
-  @staticmethod
-  def load_or_create_peer_data():
-    # Create torrent directory if it doesn't exist
-    if not os.path.exists('./torrent'):
-      os.makedirs('./torrent')
-            
-    if os.path.exists(PEER_DATA_FILE):
-      try:
-        with open(PEER_DATA_FILE, 'r') as f:
-          data = json.load(f)
-          return data
-      except:
-        pass
-    
-    return {}
-
-  @staticmethod
-  def save_peer_data(data):
-    # Save to MongoDB
-    db_save_peer_data(data)
-    # Also save locally
-    with open(PEER_DATA_FILE, 'w') as f:
-        json.dump(data, f, indent=2)
-
   def __init__(self, torrent):
     self.torrent = torrent
+    
+    # Define HTTP_HEADERS here instead of class level
+    self.HTTP_HEADERS = {
+        "Accept-Encoding": "gzip",
+        "User-Agent": self.get_user_agent()
+    }
     
     # Load all peer data
     peer_data = self.load_or_create_peer_data()
@@ -332,3 +309,27 @@ class Seeder:
     except Exception as e:
         print(f"Error during force update: {str(e)}")
         return False
+
+  @staticmethod
+  def load_or_create_peer_data():
+    # Create torrent directory if it doesn't exist
+    if not os.path.exists('./torrent'):
+      os.makedirs('./torrent')
+            
+    if os.path.exists(PEER_DATA_FILE):
+      try:
+        with open(PEER_DATA_FILE, 'r') as f:
+          data = json.load(f)
+          return data
+      except:
+        pass
+    
+    return {}
+
+  @staticmethod
+  def save_peer_data(data):
+    # Save to MongoDB
+    db_save_peer_data(data)
+    # Also save locally
+    with open(PEER_DATA_FILE, 'w') as f:
+        json.dump(data, f, indent=2)
